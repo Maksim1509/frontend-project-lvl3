@@ -1,1 +1,3 @@
-export default () => 100;
+import './styles.scss';
+
+import './bootstrap/bootstrap';
