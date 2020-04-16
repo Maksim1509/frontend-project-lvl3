@@ -4,7 +4,7 @@
   "description": "rss agregator, study project",
   "main": "index.js",
   "engines": {
-    "node": ">=13"
+    "node": "12.x"
   },
   "files": [
     "dist"
