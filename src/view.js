@@ -37,6 +37,13 @@ export default (state) => {
       feedback.innerHTML = 'Rss has been loaded';
       feedback.classList.add('valid-feedback');
     }
+    if (state.processState === 'finished this Error') {
+      submitBtn.disabled = false;
+      link.readOnly = false;
+      link.value = '';
+      feedback.innerHTML = state.processError;
+      feedback.classList.add('invalid-feedback');
+    }
   });
 
   watch(state, 'feedContent', () => {

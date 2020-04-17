@@ -2,7 +2,7 @@ import { uniqueId } from 'lodash';
 
 export default (data) => {
   const parser = new DOMParser();
-  const parsedData = parser.parseFromString(data, 'text/html');
+  const parsedData = parser.parseFromString(data, 'text/xml');
   const title = parsedData.querySelector('title').textContent;
   const discription = parsedData.querySelector('description').textContent;
   const posts = parsedData.querySelectorAll('item');

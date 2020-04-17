@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-// import _ from 'lodash';
 import * as yup from 'yup';
 import axios from 'axios';
 import view from './view';
@@ -41,18 +40,19 @@ export default () => {
       state.valid = false;
       return;
     }
-    state.links.push(link);
     state.processState = 'sending';
-
 
     axios.get(`https://cors-anywhere.herokuapp.com/${link}`)
       .then((response) => {
         const feedContent = getContent(response.data);
         state.feedContent.push(feedContent);
+        state.links.push(link);
         state.processState = 'finished';
       })
-      .catch((er) => {
-        state.processState = 'finished';
+      .catch((err) => {
+        state.processState = 'finished this Error';
+        console.log(err);
+        state.processError = err;
       });
   });
 

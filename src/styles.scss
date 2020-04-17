@@ -1,5 +1,8 @@
 @import './bootstrap/bootstrap.scss';
 
-.valid-feedback {
+.valid-feedback, .invalid-feedback {
   display: block;
+}
+.feedback {
+  height: 15px;
 }
