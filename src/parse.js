@@ -8,7 +8,7 @@ export default (data) => {
   const posts = parsedData.querySelectorAll('item');
   const postsContent = [...posts].map((post) => {
     const titlePost = post.querySelector('title').textContent;
-    const link = post.querySelector('link').nextSibling.textContent;
+    const link = post.querySelector('link').textContent;
     return { titlePost, link };
   });
   const feedId = uniqueId();

@@ -1,49 +1,12 @@
 import { watch } from 'melanke-watchjs';
 
-export default (state) => {
-  watch(state, 'errors', () => {
-    const inputLink = document.querySelector('input');
-    const feedback = document.querySelector('.feedback');
-    if (!state.valid) {
-      const { errors: [error] } = state;
-      inputLink.classList.add('is-invalid');
-      feedback.classList.add('invalid-feedback');
-      feedback.classList.remove('valid-feedback');
-      feedback.innerHTML = error;
-    } else {
-      inputLink.classList.remove('is-invalid');
-      feedback.classList.remove('invalid-feedback');
-      feedback.innerHTML = '';
-    }
-  });
+export default (state, renderErrors, renderState) => {
+  watch(state, 'errors', () => renderErrors(state));
+  watch(state, 'processState', () => renderState(state));
 
   watch(state, 'valid', () => {
     const submitBtn = document.querySelector('button');
     submitBtn.disabled = !state.valid;
-  });
-
-  watch(state, 'processState', () => {
-    const submitBtn = document.querySelector('button');
-    const link = document.querySelector('input');
-    const feedback = document.querySelector('.feedback');
-    if (state.processState === 'sending') {
-      submitBtn.disabled = true;
-      link.readOnly = true;
-    }
-    if (state.processState === 'finished') {
-      submitBtn.disabled = false;
-      link.readOnly = false;
-      link.value = '';
-      feedback.innerHTML = 'Rss has been loaded';
-      feedback.classList.add('valid-feedback');
-    }
-    if (state.processState === 'finished this Error') {
-      submitBtn.disabled = false;
-      link.readOnly = false;
-      link.value = '';
-      feedback.innerHTML = state.processError;
-      feedback.classList.add('invalid-feedback');
-    }
   });
 
   watch(state, 'feedContent', () => {
