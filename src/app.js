@@ -8,6 +8,8 @@ import resources from './locales';
 
 const schema = yup.string().url().required();
 
+const addProxy = (url) => `https://cors-anywhere.herokuapp.com/${url}`;
+
 const updateValidationState = (state) => {
   try {
     schema.validateSync(state.linkField, { abortEarly: false });
@@ -15,7 +17,6 @@ const updateValidationState = (state) => {
     state.errors = [];
   } catch (e) {
     const errors = e.inner.map(({ message }) => message);
-    console.log(errors);
     state.errors = errors;
     state.valid = false;
   }
@@ -31,8 +32,8 @@ const formController = (state) => (event) => {
     return;
   }
   state.processState = 'sending';
-
-  axios.get(`https://cors-anywhere.herokuapp.com/${link}`)
+  const linkWithProxy = addProxy(link);
+  axios.get(linkWithProxy)
     .then((response) => {
       const feedContent = getContent(response.data);
       state.feedContent.push(feedContent);
@@ -40,9 +41,6 @@ const formController = (state) => (event) => {
       state.processState = 'finished';
     })
     .catch((err) => {
-      const keys = Object.entries(err);
-      console.log(keys);
-      console.log(err);
       state.processState = 'finished this Error';
       state.processError = err.response.status;
     });
@@ -56,7 +54,6 @@ const renderErrors = (state) => {
     inputLink.classList.add('is-invalid');
     feedback.classList.add('invalid-feedback');
     feedback.classList.remove('valid-feedback');
-    console.log(i18next);
     feedback.innerHTML = i18next.t(`errors.validation.${error}`);
   } else {
     inputLink.classList.remove('is-invalid');
@@ -84,7 +81,6 @@ const renderState = (state) => {
     submitBtn.disabled = false;
     link.readOnly = false;
     link.value = '';
-    console.log(state.processError);
     feedback.innerHTML = i18next.t([`errors.netWork.${state.processError}`, 'errors.netWork.unspecific']);
     feedback.classList.add('invalid-feedback');
   }
@@ -106,6 +102,25 @@ export default () => {
     feedContent: [],
   };
   view(state, renderErrors, renderState);
+
+  const updateContent = () => {
+    const promises = state.links.map((link) => {
+      const linkWithProxy = addProxy(link);
+      return axios.get(linkWithProxy);
+    });
+    const promise = Promise.all(promises);
+    promise.then((response) => {
+      const feedContent = response.map(({ data }) => getContent(data));
+      state.feedContent = feedContent;
+      console.log('restart');
+      setTimeout(updateContent, 5000);
+    }).catch((e) => {
+      console.log(e);
+      setTimeout(updateContent, 5000);
+    });
+  };
+  console.log('start');
+  setTimeout(updateContent, 5000);
 
   const form = document.querySelector('form');
   form.addEventListener('submit', formController(state));
