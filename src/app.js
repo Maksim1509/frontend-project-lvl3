@@ -66,23 +66,25 @@ const renderState = (state) => {
   const submitBtn = document.querySelector('button');
   const link = document.querySelector('input');
   const feedback = document.querySelector('.feedback');
-  if (state.processState === 'sending') {
-    submitBtn.disabled = true;
-    link.readOnly = true;
-  }
-  if (state.processState === 'finished') {
-    submitBtn.disabled = false;
-    link.readOnly = false;
-    link.value = '';
-    feedback.innerHTML = i18next.t('loaded');
-    feedback.classList.add('valid-feedback');
-  }
-  if (state.processState === 'finished this Error') {
-    submitBtn.disabled = false;
-    link.readOnly = false;
-    link.value = '';
-    feedback.innerHTML = i18next.t([`errors.netWork.${state.processError}`, 'errors.netWork.unspecific']);
-    feedback.classList.add('invalid-feedback');
+
+  switch (state.processState) {
+    case 'sending': submitBtn.disabled = true;
+      link.readOnly = true;
+      break;
+    case 'finished': submitBtn.disabled = false;
+      link.readOnly = false;
+      link.value = '';
+      feedback.innerHTML = i18next.t('loaded');
+      feedback.classList.add('valid-feedback');
+      break;
+    case 'finished this Error': submitBtn.disabled = false;
+      link.readOnly = false;
+      link.value = '';
+      feedback.innerHTML = i18next.t([`errors.netWork.${state.processError}`, 'errors.netWork.unspecific']);
+      feedback.classList.add('invalid-feedback');
+      break;
+    default:
+      throw new Error(`Unknow state: ${state.processState}`);
   }
 };
 
@@ -101,6 +103,7 @@ export default () => {
     links: [],
     feedContent: [],
   };
+
   view(state, renderErrors, renderState);
 
   const updateContent = () => {
@@ -112,14 +115,12 @@ export default () => {
     promise.then((response) => {
       const feedContent = response.map(({ data }) => getContent(data));
       state.feedContent = feedContent;
-      console.log('restart');
       setTimeout(updateContent, 5000);
     }).catch((e) => {
       console.log(e);
       setTimeout(updateContent, 5000);
     });
   };
-  console.log('start');
   setTimeout(updateContent, 5000);
 
   const form = document.querySelector('form');
