@@ -106,6 +106,7 @@ export default () => {
 
   view(state, renderErrors, renderState);
 
+  const requestIntervalTime = 5000;
   const updateContent = () => {
     const promises = state.links.map((link) => {
       const linkWithProxy = addProxy(link);
@@ -115,13 +116,13 @@ export default () => {
     promise.then((response) => {
       const feedContent = response.map(({ data }) => getContent(data));
       state.feedContent = feedContent;
-      setTimeout(updateContent, 5000);
+      setTimeout(updateContent, requestIntervalTime);
     }).catch((e) => {
       console.log(e);
-      setTimeout(updateContent, 5000);
+      setTimeout(updateContent, requestIntervalTime);
     });
   };
-  setTimeout(updateContent, 5000);
+  setTimeout(updateContent, requestIntervalTime);
 
   const form = document.querySelector('form');
   form.addEventListener('submit', formController(state));
