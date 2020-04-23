@@ -1,5 +1,3 @@
-import { uniqueId } from 'lodash';
-
 export default (data) => {
   const parser = new DOMParser();
   const parsedData = parser.parseFromString(data, 'text/xml');
@@ -11,8 +9,7 @@ export default (data) => {
     const link = post.querySelector('link').textContent;
     return { titlePost, link };
   });
-  const feedId = uniqueId();
   return {
-    title, discription, postsContent, feedId,
+    title, discription, postsContent,
   };
 };

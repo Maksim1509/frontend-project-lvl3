@@ -2,9 +2,11 @@
 import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
+import { uniqueId } from 'lodash';
 import view from './view';
 import getContent from './parse';
 import resources from './locales';
+
 
 const schema = yup.string().url().required();
 
@@ -36,6 +38,8 @@ const formController = (state) => (event) => {
   axios.get(linkWithProxy)
     .then((response) => {
       const feedContent = getContent(response.data);
+      const feedId = uniqueId();
+      feedContent.feedId = feedId;
       state.feedContent.push(feedContent);
       state.links.push(link);
       state.processState = 'finished';
@@ -95,7 +99,7 @@ export default () => {
     resources,
   });
   const state = {
-    processState: 'filling',
+    processState: '',
     processError: null,
     linkField: '',
     valid: true,
@@ -110,15 +114,19 @@ export default () => {
   const updateContent = () => {
     const promises = state.links.map((link) => {
       const linkWithProxy = addProxy(link);
-      return axios.get(linkWithProxy);
+      return axios.get(linkWithProxy).catch((e) => console.log(e));
     });
     const promise = Promise.all(promises);
     promise.then((response) => {
-      const feedContent = response.map(({ data }) => getContent(data));
+      const feedContent = response.map(({ data }) => {
+        const content = getContent(data);
+        const feedId = uniqueId();
+        content.feedId = feedId;
+        return content;
+      });
       state.feedContent = feedContent;
       setTimeout(updateContent, requestIntervalTime);
-    }).catch((e) => {
-      console.log(e);
+    }).catch(() => {
       setTimeout(updateContent, requestIntervalTime);
     });
   };
@@ -129,7 +137,6 @@ export default () => {
 
   const input = form.querySelector('input');
   input.addEventListener('input', ({ target }) => {
-    state.processState = 'filling';
     const { value } = target;
     state.linkField = value;
     updateValidationState(state);

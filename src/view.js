@@ -18,6 +18,7 @@ export default (state, renderErrors, renderState) => {
 
       const divFeed = document.createElement('div');
       divFeed.classList.add('feed', 'col');
+      console.log(feed);
       divFeed.id = `feed-${feed.feedId}`;
       const feedTitle = document.createElement('h4');
       feedTitle.innerHTML = feed.title;
