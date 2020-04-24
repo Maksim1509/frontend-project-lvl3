@@ -2,11 +2,11 @@
 import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
-import { uniqueId } from 'lodash';
-import view from './view';
-import getContent from './parse';
+import _ from 'lodash';
 import resources from './locales';
-
+import observe from './observers';
+import getContent from './parse';
+import { renderErrors, renderState } from './renders';
 
 const schema = yup.string().url().required();
 
@@ -24,11 +24,12 @@ const updateValidationState = (state) => {
   }
 };
 
-const formController = (state) => (event) => {
+const formHandler = (state) => (event) => {
   event.preventDefault();
   const formData = new FormData(event.target);
   const link = formData.get('link');
-  if (state.links.includes(link)) {
+  if (
+    state.links.includes(link)) {
     state.errors.push('rss alredy exist');
     state.valid = false;
     return;
@@ -38,7 +39,7 @@ const formController = (state) => (event) => {
   axios.get(linkWithProxy)
     .then((response) => {
       const feedContent = getContent(response.data);
-      const feedId = uniqueId();
+      const feedId = _.uniqueId();
       feedContent.feedId = feedId;
       state.feedContent.push(feedContent);
       state.links.push(link);
@@ -48,48 +49,6 @@ const formController = (state) => (event) => {
       state.processState = 'finished this Error';
       state.processError = err.response.status;
     });
-};
-
-const renderErrors = (state) => {
-  const inputLink = document.querySelector('input');
-  const feedback = document.querySelector('.feedback');
-  if (!state.valid) {
-    const { errors: [error] } = state;
-    inputLink.classList.add('is-invalid');
-    feedback.classList.add('invalid-feedback');
-    feedback.classList.remove('valid-feedback');
-    feedback.innerHTML = i18next.t(`errors.validation.${error}`);
-  } else {
-    inputLink.classList.remove('is-invalid');
-    feedback.classList.remove('invalid-feedback');
-    feedback.innerHTML = '';
-  }
-};
-
-const renderState = (state) => {
-  const submitBtn = document.querySelector('button');
-  const link = document.querySelector('input');
-  const feedback = document.querySelector('.feedback');
-
-  switch (state.processState) {
-    case 'sending': submitBtn.disabled = true;
-      link.readOnly = true;
-      break;
-    case 'finished': submitBtn.disabled = false;
-      link.readOnly = false;
-      link.value = '';
-      feedback.innerHTML = i18next.t('loaded');
-      feedback.classList.add('valid-feedback');
-      break;
-    case 'finished this Error': submitBtn.disabled = false;
-      link.readOnly = false;
-      link.value = '';
-      feedback.innerHTML = i18next.t([`errors.netWork.${state.processError}`, 'errors.netWork.unspecific']);
-      feedback.classList.add('invalid-feedback');
-      break;
-    default:
-      throw new Error(`Unknow state: ${state.processState}`);
-  }
 };
 
 export default () => {
@@ -106,25 +65,24 @@ export default () => {
     errors: [],
     links: [],
     feedContent: [],
+    feedUpdatedContent: [],
   };
 
-  view(state, renderErrors, renderState);
+  observe(state, renderErrors, renderState, i18next);
 
   const requestIntervalTime = 5000;
   const updateContent = () => {
     const promises = state.links.map((link) => {
       const linkWithProxy = addProxy(link);
-      return axios.get(linkWithProxy).catch((e) => console.log(e));
+      return axios.get(linkWithProxy);
     });
     const promise = Promise.all(promises);
     promise.then((response) => {
-      const feedContent = response.map(({ data }) => {
+      const feedUpdatedContent = response.map(({ data }) => {
         const content = getContent(data);
-        const feedId = uniqueId();
-        content.feedId = feedId;
         return content;
       });
-      state.feedContent = feedContent;
+      state.feedUpdatedContent = feedUpdatedContent;
       setTimeout(updateContent, requestIntervalTime);
     }).catch(() => {
       setTimeout(updateContent, requestIntervalTime);
@@ -133,7 +91,7 @@ export default () => {
   setTimeout(updateContent, requestIntervalTime);
 
   const form = document.querySelector('form');
-  form.addEventListener('submit', formController(state));
+  form.addEventListener('submit', formHandler(state));
 
   const input = form.querySelector('input');
   input.addEventListener('input', ({ target }) => {
