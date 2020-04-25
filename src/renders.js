@@ -4,12 +4,12 @@ export const renderErrors = (state, i18next) => {
   if (!state.valid) {
     const { errors: [error] } = state;
     inputLink.classList.add('is-invalid');
-    feedback.classList.add('invalid-feedback');
-    feedback.classList.remove('valid-feedback');
+    feedback.classList.add('text-danger');
+    feedback.classList.remove('text-success');
     feedback.innerHTML = i18next.t(`errors.validation.${error}`);
   } else {
     inputLink.classList.remove('is-invalid');
-    feedback.classList.remove('invalid-feedback');
+    feedback.classList.remove('text-danger');
     feedback.innerHTML = '';
   }
 };
@@ -23,17 +23,17 @@ export const renderState = (state, i18next) => {
     case 'sending': submitBtn.disabled = true;
       link.readOnly = true;
       break;
-    case 'finished': submitBtn.disabled = false;
+    case 'successfully': submitBtn.disabled = false;
       link.readOnly = false;
       link.value = '';
       feedback.innerHTML = i18next.t('loaded');
-      feedback.classList.add('valid-feedback');
+      feedback.classList.add('text-success');
       break;
-    case 'finished this Error': submitBtn.disabled = false;
+    case 'failed': submitBtn.disabled = false;
       link.readOnly = false;
       link.value = '';
       feedback.innerHTML = i18next.t([`errors.netWork.${state.processError}`, 'errors.netWork.unspecific']);
-      feedback.classList.add('invalid-feedback');
+      feedback.classList.add('text-danger');
       break;
     default:
       throw new Error(`Unknow state: ${state.processState}`);

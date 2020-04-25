@@ -29,41 +29,41 @@ export default (state, renderErrors, renderState, i18next) => {
     postsContainer.classList.add('tab-pane', 'fade');
     postsContainer.setAttribute('role', 'tabpanel');
     postsContainer.setAttribute('aria-labelledby', `list-feed${currentFeed.feedId}-list`);
-    const postList = document.createElement('ul');
-    postList.classList.add('list-group');
+    const postsList = document.createElement('ul');
+    postsList.classList.add('list-group');
     currentFeed.postsContent.forEach((post) => {
       const postListItem = document.createElement('li');
       postListItem.classList.add('list-group-item');
       const link = `<a class="text-secondary" href="${post.link}">${post.titlePost}</a>`;
       postListItem.innerHTML = link;
-      postList.appendChild(postListItem);
+      postsList.appendChild(postListItem);
     });
     if (state.feedContent.length === 1) {
       feedListItem.classList.add('active');
       postsContainer.classList.add('show', 'active');
     }
     listTab.appendChild(feedListItem);
-    postsContainer.appendChild(postList);
+    postsContainer.appendChild(postsList);
     tabContent.appendChild(postsContainer);
   });
 
   watch(state, 'feedUpdatedContent', () => {
-    const posts = document.querySelectorAll('[role="tabpanel"]');
+    const postsContainer = document.querySelectorAll('[role="tabpanel"]');
     const updatedPosts = state.feedUpdatedContent
       .map(({ postsContent }, index) => ({ postsContent, index }));
     updatedPosts.forEach(({ postsContent, index }) => {
-      const post = posts[index];
-      post.innerHTML = '';
-      const postList = document.createElement('ul');
-      postList.classList.add('list-group');
+      const oldPost = postsContainer[index];
+      oldPost.innerHTML = '';
+      const postsList = document.createElement('ul');
+      postsList.classList.add('list-group');
       postsContent.forEach(({ titlePost, link }) => {
         const postListItem = document.createElement('li');
         postListItem.classList.add('list-group-item');
-        const linkItem = `<a class="text-secondary" href="${link}">${titlePost}</a>`;
-        postListItem.innerHTML = linkItem;
-        postList.appendChild(postListItem);
+        const linkHtml = `<a class="text-secondary" href="${link}">${titlePost}</a>`;
+        postListItem.innerHTML = linkHtml;
+        postsList.appendChild(postListItem);
       });
-      post.appendChild(postList);
+      oldPost.appendChild(postsList);
     });
   });
 };

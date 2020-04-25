@@ -8,7 +8,9 @@ import observe from './observers';
 import getContent from './parse';
 import { renderErrors, renderState } from './renders';
 
-const schema = yup.string().url().required();
+const links = [];
+const schema = yup.string().url().required()
+  .test('Unique', 'rss alredy exist', (values) => !links.includes(values));
 
 const addProxy = (url) => `https://cors-anywhere.herokuapp.com/${url}`;
 
@@ -28,12 +30,6 @@ const formHandler = (state) => (event) => {
   event.preventDefault();
   const formData = new FormData(event.target);
   const link = formData.get('link');
-  if (
-    state.links.includes(link)) {
-    state.errors.push('rss alredy exist');
-    state.valid = false;
-    return;
-  }
   state.processState = 'sending';
   const linkWithProxy = addProxy(link);
   axios.get(linkWithProxy)
@@ -42,11 +38,12 @@ const formHandler = (state) => (event) => {
       const feedId = _.uniqueId();
       feedContent.feedId = feedId;
       state.feedContent.push(feedContent);
+      links.push(link);
       state.links.push(link);
-      state.processState = 'finished';
+      state.processState = 'successfully';
     })
     .catch((err) => {
-      state.processState = 'finished this Error';
+      state.processState = 'failed';
       state.processError = err.response.status;
     });
 };
@@ -97,6 +94,6 @@ export default () => {
   input.addEventListener('input', ({ target }) => {
     const { value } = target;
     state.linkField = value;
-    updateValidationState(state);
+    updateValidationState(state, state.links);
   });
 };
