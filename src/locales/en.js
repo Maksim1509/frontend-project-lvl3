@@ -12,5 +12,9 @@ export default {
       },
     },
     loaded: 'Rss has been loaded!',
+    button: {
+      add: 'Add',
+      load: ' Loading...',
+    },
   },
 };

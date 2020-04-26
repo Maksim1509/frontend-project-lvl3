@@ -18,18 +18,28 @@ export const renderState = (state, i18next) => {
   const submitBtn = document.querySelector('button');
   const link = document.querySelector('input');
   const feedback = document.querySelector('.feedback');
+  const spiner = document.createElement('span');
+  spiner.classList.add('spinner-border', 'spinner-border-sm');
+  spiner.setAttribute('role', 'status');
+  spiner.setAttribute('aria-hidden', 'true');
+  const spinerText = document.createTextNode(i18next.t('button.load'));
 
   switch (state.processState) {
     case 'sending': submitBtn.disabled = true;
       link.readOnly = true;
+      submitBtn.innerHTML = '';
+      submitBtn.appendChild(spiner);
+      submitBtn.appendChild(spinerText);
       break;
     case 'successfully': submitBtn.disabled = false;
+      submitBtn.innerHTML = i18next.t('button.add');
       link.readOnly = false;
       link.value = '';
       feedback.innerHTML = i18next.t('loaded');
       feedback.classList.add('text-success');
       break;
     case 'failed': submitBtn.disabled = false;
+      submitBtn.innerHTML = i18next.t('button.add');
       link.readOnly = false;
       link.value = '';
       feedback.innerHTML = i18next.t([`errors.netWork.${state.processError}`, 'errors.netWork.unspecific']);
