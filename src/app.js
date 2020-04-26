@@ -8,18 +8,19 @@ import observe from './observers';
 import getContent from './parse';
 import { renderErrors, renderState } from './renders';
 
-const links = [];
-const schema = yup.string().url().required()
-  .test('Unique', 'rss alredy exist', (values) => !links.includes(values));
+const getValidationSchema = (links) => yup.string().url().required()
+  .test('Unique', 'rss already exist', (value) => !links.includes(value));
 
 const addProxy = (url) => `https://cors-anywhere.herokuapp.com/${url}`;
 
 const updateValidationState = (state) => {
+  const schema = getValidationSchema(state.links);
   try {
     schema.validateSync(state.linkField, { abortEarly: false });
     state.valid = true;
     state.errors = [];
   } catch (e) {
+    console.log(e);
     const errors = e.inner.map(({ message }) => message);
     state.errors = errors;
     state.valid = false;
@@ -38,7 +39,6 @@ const formHandler = (state) => (event) => {
       const feedId = _.uniqueId();
       feedContent.feedId = feedId;
       state.feedContent.push(feedContent);
-      links.push(link);
       state.links.push(link);
       state.processState = 'successfully';
     })
@@ -94,6 +94,6 @@ export default () => {
   input.addEventListener('input', ({ target }) => {
     const { value } = target;
     state.linkField = value;
-    updateValidationState(state, state.links);
+    updateValidationState(state);
   });
 };

@@ -2,9 +2,9 @@ export default {
   translation: {
     errors: {
       validation: {
-        'this must be a valid URL': 'This must be a valid URL.',
-        'this is a required field': 'This is a required field.',
-        'rss alredy exist': 'Rss alredy exist.',
+        'this must be a valid URL': 'Must be a valid URL.',
+        'this is a required field': 'Is a required field.',
+        'rss already exist': 'Rss already exist.',
       },
       netWork: {
         404: 'The page was not found.',
