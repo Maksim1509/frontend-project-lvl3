@@ -8,13 +8,11 @@ import observe from './observers';
 import getContent from './parse';
 import { renderErrors, renderState } from './renders';
 
-const getValidationSchema = (links) => yup.string().url().required()
-  .test('Unique', 'rss already exist', (value) => !links.includes(value));
-
 const addProxy = (url) => `https://cors-anywhere.herokuapp.com/${url}`;
 
 const updateValidationState = (state) => {
-  const schema = getValidationSchema(state.links);
+  const schema = yup.string().url().required()
+    .notOneOf(state.links, 'rss already exist');
   try {
     schema.validateSync(state.linkField, { abortEarly: false });
     state.valid = true;
@@ -35,15 +33,18 @@ const formHandler = (state) => (event) => {
   const linkWithProxy = addProxy(link);
   axios.get(linkWithProxy)
     .then((response) => {
-      const feedContent = getContent(response.data);
+      const [feed, posts] = getContent(response.data);
       const feedId = _.uniqueId();
-      feedContent.feedId = feedId;
-      state.feedContent.push(feedContent);
+      feed.feedId = feedId;
+      state.feedsList.push(feed);
+      state.postsList.push(posts);
       state.links.push(link);
+      state.valid = false;
       state.processState = 'successfully';
     })
     .catch((err) => {
       state.processState = 'failed';
+      state.valid = false;
       state.processError = err.response.status;
     });
 };
@@ -58,14 +59,14 @@ export default () => {
     processState: '',
     processError: null,
     linkField: '',
-    valid: true,
+    valid: false,
     errors: [],
     links: [],
-    feedContent: [],
-    feedUpdatedContent: [],
+    feedsList: [],
+    postsList: [],
   };
 
-  observe(state, renderErrors, renderState, i18next);
+  observe(state, renderErrors, renderState);
 
   const requestIntervalTime = 5000;
   const updateContent = () => {
@@ -75,15 +76,12 @@ export default () => {
     });
     const promise = Promise.all(promises);
     promise.then((response) => {
-      const feedUpdatedContent = response.map(({ data }) => {
-        const content = getContent(data);
-        return content;
+      const updatedPosts = response.map(({ data }) => {
+        const [, posts] = getContent(data);
+        return posts;
       });
-      state.feedUpdatedContent = feedUpdatedContent;
-      setTimeout(updateContent, requestIntervalTime);
-    }).catch(() => {
-      setTimeout(updateContent, requestIntervalTime);
-    });
+      state.postsList = updatedPosts;
+    }).finally(() => setTimeout(updateContent, requestIntervalTime));
   };
   setTimeout(updateContent, requestIntervalTime);
 

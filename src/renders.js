@@ -1,4 +1,6 @@
-export const renderErrors = (state, i18next) => {
+import i18next from 'i18next';
+
+export const renderErrors = (state) => {
   const inputLink = document.querySelector('input');
   const feedback = document.querySelector('.feedback');
   if (!state.valid) {
@@ -14,7 +16,7 @@ export const renderErrors = (state, i18next) => {
   }
 };
 
-export const renderState = (state, i18next) => {
+export const renderState = (state) => {
   const submitBtn = document.querySelector('button');
   const link = document.querySelector('input');
   const feedback = document.querySelector('.feedback');
@@ -31,14 +33,14 @@ export const renderState = (state, i18next) => {
       submitBtn.appendChild(spiner);
       submitBtn.appendChild(spinerText);
       break;
-    case 'successfully': submitBtn.disabled = false;
+    case 'successfully':
       submitBtn.innerHTML = i18next.t('button.add');
       link.readOnly = false;
       link.value = '';
       feedback.innerHTML = i18next.t('loaded');
       feedback.classList.add('text-success');
       break;
-    case 'failed': submitBtn.disabled = false;
+    case 'failed':
       submitBtn.innerHTML = i18next.t('button.add');
       link.readOnly = false;
       link.value = '';

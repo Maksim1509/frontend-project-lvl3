@@ -4,12 +4,10 @@ export default (data) => {
   const title = parsedData.querySelector('title').textContent;
   const discription = parsedData.querySelector('description').textContent;
   const posts = parsedData.querySelectorAll('item');
-  const postsContent = [...posts].map((post) => {
+  const postContents = [...posts].map((post) => {
     const titlePost = post.querySelector('title').textContent;
     const link = post.querySelector('link').textContent;
     return { titlePost, link };
   });
-  return {
-    title, discription, postsContent,
-  };
+  return [{ title, discription }, postContents];
 };

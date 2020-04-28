@@ -1,6 +1,8 @@
 import { watch } from 'melanke-watchjs';
 import { last } from 'lodash';
 
+const isFirstFeed = (feeds) => feeds.length === 1;
+
 export default (state, renderErrors, renderState, i18next) => {
   watch(state, 'errors', () => renderErrors(state, i18next));
   watch(state, 'processState', () => renderState(state, i18next));
@@ -10,9 +12,9 @@ export default (state, renderErrors, renderState, i18next) => {
     submitBtn.disabled = !state.valid;
   });
 
-  watch(state, 'feedContent', () => {
+  watch(state, 'feedsList', () => {
     const listTab = document.getElementById('list-tab');
-    const currentFeed = last(state.feedContent);
+    const currentFeed = last(state.feedsList);
     const feedListItem = document.createElement('a');
     feedListItem.setAttribute('id', `list-feed${currentFeed.feedId}-list`);
     feedListItem.setAttribute('data-toggle', 'list');
@@ -29,34 +31,23 @@ export default (state, renderErrors, renderState, i18next) => {
     postsContainer.classList.add('tab-pane', 'fade');
     postsContainer.setAttribute('role', 'tabpanel');
     postsContainer.setAttribute('aria-labelledby', `list-feed${currentFeed.feedId}-list`);
-    const postsList = document.createElement('ul');
-    postsList.classList.add('list-group');
-    currentFeed.postsContent.forEach((post) => {
-      const postListItem = document.createElement('li');
-      postListItem.classList.add('list-group-item');
-      const link = `<a class="text-secondary" href="${post.link}">${post.titlePost}</a>`;
-      postListItem.innerHTML = link;
-      postsList.appendChild(postListItem);
-    });
-    if (state.feedContent.length === 1) {
+    if (isFirstFeed(state.feedsList)) {
       feedListItem.classList.add('active');
       postsContainer.classList.add('show', 'active');
     }
     listTab.appendChild(feedListItem);
-    postsContainer.appendChild(postsList);
     tabContent.appendChild(postsContainer);
   });
 
-  watch(state, 'feedUpdatedContent', () => {
+  watch(state, 'postsList', () => {
     const postsContainer = document.querySelectorAll('[role="tabpanel"]');
-    const updatedPosts = state.feedUpdatedContent
-      .map(({ postsContent }, index) => ({ postsContent, index }));
-    updatedPosts.forEach(({ postsContent, index }) => {
+    const updatedPosts = state.postsList.map((posts, index) => ({ posts, index }));
+    updatedPosts.forEach(({ posts, index }) => {
       const oldPost = postsContainer[index];
       oldPost.innerHTML = '';
       const postsList = document.createElement('ul');
       postsList.classList.add('list-group');
-      postsContent.forEach(({ titlePost, link }) => {
+      posts.forEach(({ titlePost, link }) => {
         const postListItem = document.createElement('li');
         postListItem.classList.add('list-group-item');
         const linkHtml = `<a class="text-secondary" href="${link}">${titlePost}</a>`;
