@@ -10,18 +10,24 @@ import { renderErrors, renderState } from './renders';
 
 const addProxy = (url) => `https://cors-anywhere.herokuapp.com/${url}`;
 
-const updateValidationState = (state) => {
+const validate = (value, links) => {
   const schema = yup.string().url().required()
-    .notOneOf(state.links, 'rss already exist');
+    .notOneOf(links, 'rss already exist');
   try {
-    schema.validateSync(state.linkField, { abortEarly: false });
-    state.valid = true;
-    state.errors = [];
-  } catch (e) {
-    console.log(e);
-    const errors = e.inner.map(({ message }) => message);
+    schema.validateSync(value, { abortEarly: false });
+  } catch (error) {
+    return error.inner.map(({ message }) => message);
+  }
+  return null;
+};
+
+const updateState = (errors, state) => {
+  if (errors) {
     state.errors = errors;
     state.valid = false;
+  } else {
+    state.errors = [];
+    state.valid = true;
   }
 };
 
@@ -92,6 +98,7 @@ export default () => {
   input.addEventListener('input', ({ target }) => {
     const { value } = target;
     state.linkField = value;
-    updateValidationState(state);
+    const errors = validate(value, state.links);
+    updateState(errors, state);
   });
 };
