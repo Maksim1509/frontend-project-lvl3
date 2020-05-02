@@ -16,18 +16,24 @@ export const renderErrors = (state) => {
   }
 };
 
-export const renderState = (state) => {
-  const submitBtn = document.querySelector('button');
-  const link = document.querySelector('input');
-  const feedback = document.querySelector('.feedback');
+const createSpiner = () => {
   const spiner = document.createElement('span');
   spiner.classList.add('spinner-border', 'spinner-border-sm');
   spiner.setAttribute('role', 'status');
   spiner.setAttribute('aria-hidden', 'true');
+  return spiner;
+};
+
+export const renderState = (state) => {
+  const submitBtn = document.querySelector('button');
+  const link = document.querySelector('input');
+  const feedback = document.querySelector('.feedback');
+  const spiner = createSpiner();
   const spinerText = document.createTextNode(i18next.t('button.load'));
 
   switch (state.processState) {
-    case 'sending': submitBtn.disabled = true;
+    case 'sending':
+      submitBtn.disabled = true;
       link.readOnly = true;
       submitBtn.innerHTML = '';
       submitBtn.appendChild(spiner);
