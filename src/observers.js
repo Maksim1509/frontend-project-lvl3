@@ -22,7 +22,7 @@ export default (state, renderErrors, renderState, i18next) => {
     feedListItem.setAttribute('role', 'tab');
     feedListItem.setAttribute('aria-controls', `feed${currentFeed.feedId}`);
     feedListItem.classList.add('list-group-item');
-    const feedTitle = `<h5>${currentFeed.title}</h5><p>${currentFeed.discription}</p>`;
+    const feedTitle = `<h5>${currentFeed.title}</h5><p>${currentFeed.description}</p>`;
     feedListItem.innerHTML = feedTitle;
 
     const tabContent = document.getElementById('nav-tabContent');
@@ -49,8 +49,8 @@ export default (state, renderErrors, renderState, i18next) => {
       postsList.classList.add('list-group');
       posts.forEach(({ title, link }) => {
         const postListItem = document.createElement('li');
-        postListItem.classList.add('list-group-item');
-        const linkHtml = `<a class="text-secondary" href="${link}">${title}</a>`;
+        postListItem.classList.add('list-group-item', 'bg-info');
+        const linkHtml = `<a class="text-white" href="${link}">${title}</a>`;
         postListItem.innerHTML = linkHtml;
         postsList.appendChild(postListItem);
       });
