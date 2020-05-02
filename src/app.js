@@ -2,10 +2,10 @@
 import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
-import _ from 'lodash';
+import { uniqueId } from 'lodash';
 import resources from './locales';
 import observe from './observers';
-import getContent from './parse';
+import rssParse from './rssParser';
 import { renderErrors, renderState } from './renders';
 
 const addProxy = (url) => `https://cors-anywhere.herokuapp.com/${url}`;
@@ -38,12 +38,13 @@ const formHandler = (state) => (event) => {
   state.processState = 'sending';
   const linkWithProxy = addProxy(link);
   axios.get(linkWithProxy)
-    .then((response) => {
-      const [feed, posts] = getContent(response.data);
-      const feedId = _.uniqueId();
-      feed.feedId = feedId;
-      state.feedsList.push(feed);
-      state.postsList.push(posts);
+    .then(({ data }) => {
+      const { rss: { channel: { title, description, item } } } = rssParse(data);
+      const feedId = uniqueId();
+      const feed = { title, description, feedId };
+
+      state.feeds.push(feed);
+      state.posts.push(item);
       state.links.push(link);
       state.valid = false;
       state.processState = 'successfully';
@@ -64,12 +65,12 @@ export default () => {
   const state = {
     processState: '',
     processError: null,
-    linkField: '',
     valid: false,
+    linkField: '',
     errors: [],
     links: [],
-    feedsList: [],
-    postsList: [],
+    feeds: [],
+    posts: [],
   };
 
   observe(state, renderErrors, renderState);
@@ -83,10 +84,10 @@ export default () => {
     const promise = Promise.all(promises);
     promise.then((response) => {
       const updatedPosts = response.map(({ data }) => {
-        const [, posts] = getContent(data);
+        const { rss: { channel: { item: posts } } } = rssParse(data);
         return posts;
       });
-      state.postsList = updatedPosts;
+      state.posts = updatedPosts;
     }).finally(() => setTimeout(updateContent, requestIntervalTime));
   };
   setTimeout(updateContent, requestIntervalTime);

@@ -12,9 +12,9 @@ export default (state, renderErrors, renderState, i18next) => {
     submitBtn.disabled = !state.valid;
   });
 
-  watch(state, 'feedsList', () => {
+  watch(state, 'feeds', () => {
     const listTab = document.getElementById('list-tab');
-    const currentFeed = last(state.feedsList);
+    const currentFeed = last(state.feeds);
     const feedListItem = document.createElement('a');
     feedListItem.setAttribute('id', `list-feed${currentFeed.feedId}-list`);
     feedListItem.setAttribute('data-toggle', 'list');
@@ -31,7 +31,7 @@ export default (state, renderErrors, renderState, i18next) => {
     postsContainer.classList.add('tab-pane', 'fade');
     postsContainer.setAttribute('role', 'tabpanel');
     postsContainer.setAttribute('aria-labelledby', `list-feed${currentFeed.feedId}-list`);
-    if (isFirstFeed(state.feedsList)) {
+    if (isFirstFeed(state.feeds)) {
       feedListItem.classList.add('active');
       postsContainer.classList.add('show', 'active');
     }
@@ -39,18 +39,18 @@ export default (state, renderErrors, renderState, i18next) => {
     tabContent.appendChild(postsContainer);
   });
 
-  watch(state, 'postsList', () => {
+  watch(state, 'posts', () => {
     const postsContainer = document.querySelectorAll('[role="tabpanel"]');
-    const updatedPosts = state.postsList.map((posts, index) => ({ posts, index }));
+    const updatedPosts = state.posts.map((posts, index) => ({ posts, index }));
     updatedPosts.forEach(({ posts, index }) => {
       const oldPost = postsContainer[index];
       oldPost.innerHTML = '';
       const postsList = document.createElement('ul');
       postsList.classList.add('list-group');
-      posts.forEach(({ titlePost, link }) => {
+      posts.forEach(({ title, link }) => {
         const postListItem = document.createElement('li');
         postListItem.classList.add('list-group-item');
-        const linkHtml = `<a class="text-secondary" href="${link}">${titlePost}</a>`;
+        const linkHtml = `<a class="text-secondary" href="${link}">${title}</a>`;
         postListItem.innerHTML = linkHtml;
         postsList.appendChild(postListItem);
       });
