@@ -39,17 +39,18 @@ const formHandler = (state) => (event) => {
   const linkWithProxy = addProxy(link);
   axios.get(linkWithProxy)
     .then(({ data }) => {
-      const { rss: { channel: { title, description, item } } } = rssParse(data);
+      const { title, description, posts } = rssParse(data);
       const feedId = uniqueId();
       const feed = { title, description, feedId };
 
       state.feeds.push(feed);
-      state.posts.push(item);
+      state.posts.push(posts);
       state.links.push(link);
       state.valid = false;
       state.processState = 'successfully';
     })
     .catch((err) => {
+      console.log(err);
       state.processState = 'failed';
       state.valid = false;
       state.processError = err.response.status;
@@ -83,11 +84,7 @@ export default () => {
     });
     const promise = Promise.all(promises);
     promise.then((response) => {
-      const updatedPosts = response.map(({ data }) => {
-        const { rss: { channel: { item: posts } } } = rssParse(data);
-        return posts;
-      });
-      state.posts = updatedPosts;
+      state.posts = response.map(({ data }) => rssParse(data).posts);
     }).finally(() => setTimeout(updateContent, requestIntervalTime));
   };
   setTimeout(updateContent, requestIntervalTime);

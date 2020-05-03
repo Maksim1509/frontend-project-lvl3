@@ -1,10 +1,7 @@
-const getHeadRss = (dom) => dom.reduce((acc, node) => {
-  const { children, tagName, textContent } = node;
-  if (!children.length || tagName === 'item') {
-    return { ...acc, [tagName]: textContent };
-  }
-  return { ...acc, [tagName]: getHeadRss([...children]) };
-}, {});
+const getHeadRss = (rss) => rss
+  .reduce((acc, { tagName, textContent }) => (
+    tagName === 'item' ? acc : { ...acc, [tagName]: textContent }
+  ), {});
 
 const getRssPosts = (items) => items.map(
   ({ children }) => [...children].reduce(
@@ -16,26 +13,10 @@ export default (data) => {
   const parser = new DOMParser();
   const parsedData = parser.parseFromString(data, 'text/xml');
 
-  const rss = parsedData.getElementsByTagName('rss');
+  const { children: rssChannel } = parsedData.querySelector('channel');
   const rssItems = parsedData.querySelectorAll('item');
 
-  const headRss = getHeadRss([...rss]);
+  const headRss = getHeadRss([...rssChannel]);
   const posts = getRssPosts([...rssItems]);
-
-  headRss.rss.channel.item = posts;
-  return headRss;
-// структура рсс
-//  {
-//    rss: {
-//      channel: {
-//        title,
-//          item: [{
-//            title,
-//            link,
-//            ...
-//          }],
-//        ...
-//      },
-//    },
-//  }
+  return { ...headRss, posts };
 };
