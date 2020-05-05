@@ -83,8 +83,8 @@ export default () => {
       return axios.get(linkWithProxy);
     });
     const promise = Promise.all(promises);
-    promise.then((response) => {
-      state.posts = response.map(({ data }) => rssParse(data).posts);
+    promise.then((responses) => {
+      state.posts = responses.map(({ data }) => rssParse(data).posts);
     }).finally(() => setTimeout(updateContent, requestIntervalTime));
   };
   setTimeout(updateContent, requestIntervalTime);
