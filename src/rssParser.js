@@ -1,39 +1,30 @@
-const getHeadRss = (rss) => {
-  const data = {};
-  rss.forEach(({ tagName, textContent }) => {
-    if (tagName === 'item') {
-      return;
-    }
-    data[tagName] = textContent;
-  });
-  return data;
-};
-
-const getObject = (node) => {
-  const { children } = node;
-  const obj = {};
-  [...children].forEach(({ tagName, textContent }) => {
-    obj[tagName] = textContent;
-  });
-  return obj;
-};
-
-const getRssPosts = (items) => {
-  const posts = [];
-  items.forEach((item) => {
-    const post = getObject(item);
-    posts.push(post);
-  });
-  return posts;
-};
-
 export default (data) => {
   const parser = new DOMParser();
-  const parsedData = parser.parseFromString(data, 'text/xml');
-  const { children: rssChannel } = parsedData.querySelector('channel');
-  const items = parsedData.querySelectorAll('item');
+  const domRss = parser.parseFromString(data, 'text/xml');
 
-  const headRss = getHeadRss([...rssChannel]);
-  const postsRss = getRssPosts([...items]);
-  return { ...headRss, posts: postsRss };
+  const title = domRss.querySelector('title');
+  const link = domRss.querySelector('link');
+  const description = domRss.querySelector('description');
+
+  const items = domRss.querySelectorAll('item');
+  const posts = [];
+  items.forEach((item) => {
+    const postTitle = item.querySelector('title');
+    const postLink = item.querySelector('link');
+    const postGuid = item.querySelector('guid');
+    const postContent = {
+      title: postTitle.textContent,
+      link: postLink.textContent,
+      guid: postGuid.textContent,
+    };
+    posts.push(postContent);
+  });
+
+  const rssData = {
+    title: title.textContent,
+    link: link.textContent,
+    description: description.textContent,
+    posts,
+  };
+  return rssData;
 };
